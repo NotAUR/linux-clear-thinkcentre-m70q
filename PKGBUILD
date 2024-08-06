@@ -130,7 +130,7 @@ _src_clr=${_kernel_major}.${_clr}
 
 # Package information
 pkgbase=linux-clear
-pkgver=${_kernel_major}.${_kernel_minor}+clr${_src_clr//-/_}
+pkgver=${_kernel_major}.${_kernel_minor}
 pkgrel=1
 pkgdesc="Linux kernel with patches from Clear Linux to allow for higher performance."
 arch=("x86_64")
