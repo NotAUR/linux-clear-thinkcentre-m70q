@@ -1,0 +1,13 @@
+/cl-linux
+# linux-6.10.tar.xz
+# patch-6.10.6.xz
+/*.tar.xz
+# more-uarches-20240221.2.tar.gz
+/*.tar.gz
+# linux-6.10.tar.sign
+/*.tar.sign
+/*.xz
+# linux-clear-headers-6.10.6-1-x86_64.pkg.tar.zst
+/*.pkg.tar.zst
+/pkg
+/src
