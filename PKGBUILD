@@ -117,11 +117,11 @@
 
 # Make job count
 # This allows us to specify the number that should be given to the `-j` argument of the `make` command.
-: "${_jobs:=""}"
+: "${_make_jobs:=""}"
 
 # Make all
 # Whether to run `make all` or just `make`
-: "${_makeall:=1}"
+: "${_make_all:=1}"
 
 ### BUILD OPTIONS END
 
@@ -315,8 +315,8 @@ prepare() {
 build() {
     cd "${_src_linux}" || exit 1
     MAKE_ARGUMENTS=${BUILD_FLAGS[*]}
-    [[ -n "$_makeall" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} all"
-    [[ -n "$_jobs" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_jobs}"
+    [[ -n "$_make_all" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} all"
+    [[ -n "$_make_jobs" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_make_jobs}"
     make ${MAKE_ARGUMENTS}
 }
 
