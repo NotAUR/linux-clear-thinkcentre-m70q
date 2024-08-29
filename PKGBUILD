@@ -115,6 +115,14 @@
 # Set to anything but null to activate.
 : "${_debug:=""}"
 
+# Make job count
+# This allows us to specify the number that should be given to the `-j` argument of the `make` command.
+: "${_jobs:=""}"
+
+# Make all
+# Whether to run `make all` or just `make`
+: "${_makeall:=1}"
+
 ### BUILD OPTIONS END
 
 # Kernel version
@@ -306,7 +314,10 @@ prepare() {
 
 build() {
     cd "${_src_linux}" || exit 1
-    make ${BUILD_FLAGS[*]} all
+    MAKE_ARGUMENTS=${BUILD_FLAGS[*]}
+    [[ -n "$_makeall" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} all"
+    [[ -n "$_jobs" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_jobs}"
+    make ${MAKE_ARGUMENTS}
 }
 
 _package() {
