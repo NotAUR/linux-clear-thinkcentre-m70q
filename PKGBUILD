@@ -117,11 +117,14 @@
 
 # Make job count
 # This allows us to specify the number that should be given to the `-j` argument of the `make` command.
-: "${_make_jobs:=""}"
+: "${_make_jobs:="n"}"
 
 # Make all
 # Whether to run `make all` or just `make`
 : "${_make_all:=1}"
+
+# ZSTD Clevel
+: "${_zstd_clevel:=19}"
 
 ### BUILD OPTIONS END
 
@@ -315,10 +318,13 @@ prepare() {
 build() {
     cd "${_src_linux}" || exit 1
     MAKE_ARGUMENTS=${BUILD_FLAGS[*]}
-    [[ -n "$_make_all" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} all"
-    [[ -n "$_make_jobs" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_make_jobs}"
+    [[ "${_make_jobs}" != "n" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_make_jobs}"
+    [[ "${_make_all}" == "n" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} all"
+    echo "Running make with the following arguments:"
+    echo "${MAKE_ARGUMENTS}"
     make ${MAKE_ARGUMENTS}
 }
+
 
 _package() {
     pkgdesc="${pkgdesc} This package includes the kernel and compiled modules."
@@ -340,8 +346,10 @@ _package() {
     echo "${pkgbase}" | install -Dm644 /dev/stdin "${modulesdir}/pkgbase"
     
     # Install modules
-    ZSTD_CLEVEL=19 make ${BUILD_FLAGS[*]} INSTALL_MOD_PATH="${pkgdir}/usr" INSTALL_MOD_STRIP=1 \
-        DEPMOD=/doesnt/exist modules_install  # Suppress depmod
+    MAKE_ARGUMENTS="${BUILD_FLAGS[*]} INSTALL_MOD_PATH="${pkgdir}/usr" INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist"
+    [[ "${_make_jobs}" != "n" ]] && MAKE_ARGUMENTS="${MAKE_ARGUMENTS} -j ${_make_jobs}"
+    [[ "${_zstd_clevel}" != "n" ]] && ZSTD_CLEVEL="${_zstd_clevel}" make ${MAKE_ARGUMENTS} modules_install  # Suppress depmod
+    [[ "${_zstd_clevel}" == "n" ]] && make ${MAKE_ARGUMENTS} modules_install  # Suppress depmod
     
     # Remove build directory
     rm "${modulesdir}"/build
