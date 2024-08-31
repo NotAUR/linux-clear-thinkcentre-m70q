@@ -1,4 +1,4 @@
-pkgbase = linux-clear
+pkgbase = linux-clear-thinkcentre-m70q
 	pkgdesc = Linux kernel with patches from Clear Linux which allow for higher performance.
 	pkgver = 6.10.6
 	pkgrel = 1
@@ -31,7 +31,7 @@ pkgbase = linux-clear
 	sha256sums = SKIP
 	sha256sums = 1d3ac3e581cbc5108f882fcdc75d74f7f069654c71bad65febe5ba15a7a3a14f
 
-pkgname = linux-clear
+pkgname = linux-clear-thinkcentre-m70q
 	pkgdesc = Linux kernel with patches from Clear Linux which allow for higher performance. This package includes the kernel and compiled modules.
 	install = linux.install
 	depends = coreutils
@@ -43,6 +43,6 @@ pkgname = linux-clear
 	provides = WIREGUARD-MODULE
 	provides = KSMBD-MODULE
 
-pkgname = linux-clear-headers
+pkgname = linux-clear-thinkcentre-m70q-headers
 	pkgdesc = Linux kernel with patches from Clear Linux which allow for higher performance. This package includes header files and scripts for building kernel modules.
 	depends = pahole

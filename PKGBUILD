@@ -140,7 +140,7 @@ _src_linux=linux-${_kernel_major}
 _src_clr=${_kernel_major}.${_clr}
 
 # Package information
-pkgbase=linux-clear
+pkgbase=linux-clear-thinkcentre-m70q
 pkgver=${_kernel_major}.${_kernel_minor}
 pkgrel=1
 pkgdesc="Linux kernel with patches from Clear Linux which allow for higher performance."
