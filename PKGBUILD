@@ -118,10 +118,10 @@
 ### BUILD OPTIONS END
 
 # Kernel version
-_kernel_major=6.10
-_kernel_minor=11
+_kernel_major=6.11
+_kernel_minor=4
 # Clear Linux patches version
-_clr=11-1464
+_clr=3-1472
 # kernel_compiler_patch version
 _kernelcompilerpatch="20241001"
 # Source directory names
@@ -131,7 +131,7 @@ _src_clr=${_kernel_major}.${_clr}
 # Package information
 pkgbase=linux-clear
 pkgver=${_kernel_major}.${_kernel_minor}
-pkgrel=3
+pkgrel=0
 pkgdesc="Linux kernel with patches from Clear Linux which allow for higher performance."
 arch=("x86_64")
 url="https://github.com/clearlinux-pkgs/linux"
@@ -430,8 +430,8 @@ validpgpkeys=(
   "E27E5D8A3403A2EF66873BBCDEA66FF797772CDC"  # Sasha Levin
   "AC2B29BD34A6AFDDB3F68F35E7BFC8EC95861109"  # Ben Hutchings
 )
-sha256sums=("774698422ee54c5f1e704456f37c65c06b51b4e9a8b0866f34580d86fef8e226"
+sha256sums=("55d2c6c025ebc27810c748d66325dd5bc601e8d32f8581d9e77673529bdacb2e"
             "SKIP"
-            "b0d817a660609b41bdee44e63e3e8dd077ad64cd6e22818e21fe1b8b97a6adb8"
+            "d0c22d3f7a5ea64938cb8a003e6f6ad3226a0dab855e89fa0fff3578946c9498"
             "SKIP"
             "3c0a38110cc21dca6b6efec03ce82ed24f473da190354cf740b5ecd6f6589aa7")
