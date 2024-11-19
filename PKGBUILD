@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2034 disable=SC2048 disable=SC2086 disable=SC2154
 # Maintainer: JeremyStarTM <jeremystartm@staropensource.de>
 # Maintainer: Josip Ponjavic <josipponjavic at gmail dot com>
 # Contributor: yarost12 <yaro330@gmail.com>
@@ -149,9 +151,9 @@ source=(
 
 [[ -n "${_use_llvm_lto}" ]] && BUILD_FLAGS=("LLVM=1" "LLVM_IAS=1")
 
-export KBUILD_BUILD_HOST=archlinux
-export KBUILD_BUILD_USER=${pkgbase}
-export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
+export "KBUILD_BUILD_HOST=archlinux"
+export "KBUILD_BUILD_USER=${pkgbase}"
+export "KBUILD_BUILD_TIMESTAMP=$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
 # Applies all patches
 apply_patches() {
@@ -176,8 +178,8 @@ apply_patches() {
 
 # Copies the kernel config
 copy_defconfig() {
-    local _cur_major_ver="$(zcat /proc/config.gz | grep Linux | grep -o '[0-9]*[0-9]\.[0-9]*[0-9]')"
-    [[ ${_cur_major_ver} != ${_kernel_major} ]] &&
+    local "_cur_major_ver=$(zcat /proc/config.gz | grep Linux | grep -o '[0-9]*[0-9]\.[0-9]*[0-9]')"
+    [[ "${_cur_major_ver}" != "${_kernel_major}" ]] &&
         warning "Major version was updated, you should regen the defconfig"
 
     if [[ -s /proc/config.gz ]]; then
@@ -296,6 +298,7 @@ update_defconfig() {
     [[ -n "$_makenconfig" ]] && make ${BUILD_FLAGS[*]} nconfig
 
     # Save configuration
+    # shellcheck disable=SC2015
     [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
 }
 
@@ -337,7 +340,7 @@ _package() {
     install=linux.install
     
     cd "${_src_linux}" || exit 1
-    local modulesdir="${pkgdir}/usr/lib/modules/$(<version)"
+    local "modulesdir=${pkgdir}/usr/lib/modules/$(<version)"
     
     # Create boot image
     # systemd expects to find the kernel there to allow hibernation
@@ -361,7 +364,7 @@ _package-headers() {
     depends=("pahole")
     
     cd "${_src_linux}" || exit 1
-    local builddir="${pkgdir}/usr/lib/modules/$(<version)/build"
+    local "builddir=${pkgdir}/usr/lib/modules/$(<version)/build"
     
     install -Dt "${builddir}" -m644 .config Makefile Module.symvers System.map \
         localversion.* version vmlinux
@@ -438,8 +441,8 @@ _package-headers() {
 pkgname=("$pkgbase" "$pkgbase-headers")
 for _p in "${pkgname[@]}"; do
   eval "package_$_p() {
-    $(declare -f "_package${_p#$pkgbase}")
-    _package${_p#$pkgbase}
+    $(declare -f "_package${_p#"$pkgbase"}")
+    _package${_p#"$pkgbase"}
   }"
 done
 
