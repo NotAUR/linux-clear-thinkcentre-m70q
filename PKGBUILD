@@ -152,6 +152,7 @@ export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=${pkgbase}
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
+# Applies all patches
 apply_patches() {
     # Patch with kernel version patches
     patch -Np1 -i ../patch-${_kernel_major}.${_kernel_minor} || true
@@ -172,6 +173,7 @@ apply_patches() {
     done
 }
 
+# Copies the kernel config
 copy_defconfig() {
     local _cur_major_ver="$(zcat /proc/config.gz | grep Linux | grep -o '[0-9]*[0-9]\.[0-9]*[0-9]')"
     [[ ${_cur_major_ver} != ${_kernel_major} ]] &&
@@ -188,7 +190,8 @@ copy_defconfig() {
     fi
 }
 
-create_defconfig() {
+# Updates the kernel config
+update_defconfig() {
     # Copy configuration file (if found)
     if [ -f "${startdir}/kconfig" ]; then
         echo ":: Using configuration file \"${startdir}/kconfig\""
@@ -295,13 +298,14 @@ create_defconfig() {
     [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
 }
 
+# Prepares the installation
 prepare() {
     cd "${_src_linux}" || exit 1
 
     apply_patches
     
     [[ -n "${_use_current}" ]] && copy_defconfig
-    [[ -z "${_use_current}" ]] && create_defconfig
+    [[ -z "${_use_current}" ]] && update_defconfig
     
     # Read and apply modprobed database
     # See https://aur.archlinux.org/packages/modprobed-db
@@ -316,11 +320,13 @@ prepare() {
     make -s kernelrelease > version
 }
 
+# Build kernel
 build() {
     cd "${_src_linux}" || exit 1
     make ${BUILD_FLAGS[*]} all
 }
 
+# Packages the kernel package
 _package() {
     pkgdesc="${pkgdesc} This package includes the kernel and compiled modules."
     depends=("coreutils" "kmod" "initramfs")
@@ -348,6 +354,7 @@ _package() {
     rm "${modulesdir}"/build
 }
 
+# Packages the headers package
 _package-headers() {
     pkgdesc="${pkgdesc} This package includes header files and scripts for building kernel modules."
     depends=("pahole")
