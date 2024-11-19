@@ -152,9 +152,7 @@ export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=${pkgbase}
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-prepare() {
-    cd "${_src_linux}" || exit 1
-    
+apply_patches() {
     # Patch with kernel version patches
     patch -Np1 -i ../patch-${_kernel_major}.${_kernel_minor} || true
     
@@ -172,7 +170,21 @@ prepare() {
         
         patch -Np1 -i "${srcdir}/cl-linux/${i}" || true
     done
-    
+}
+
+copy_defconfig() {
+    if [[ -s /proc/config.gz ]]; then
+        # modprobe configs
+        zcat /proc/config.gz > ./.config
+        make ${BUILD_FLAGS[*]} olddefconfig
+    else
+        warning "Your kernel was not compiled with IKCONFIG_PROC."
+        warning "Unable to read kernel configuration, aborting."
+        exit
+    fi
+}
+
+create_defconfig() {
     # Copy configuration file (if found)
     if [ -f "${startdir}/kconfig" ]; then
         echo ":: Using configuration file \"${startdir}/kconfig\""
@@ -185,12 +197,12 @@ prepare() {
     # Extra configuration
     # General setup
     scripts/config --set-str DEFAULT_HOSTNAME archlinux \
-                   -e IKCONFIG \
-                   -e IKCONFIG_PROC \
-                   -u RT_GROUP_SCHED
+                -e IKCONFIG \
+                -e IKCONFIG_PROC \
+                -u RT_GROUP_SCHED
     # Power management and ACPI options
     scripts/config -e ACPI_REV_OVERRIDE_POSSIBLE \
-                   -e ACPI_TABLE_UPGRADE
+                -e ACPI_TABLE_UPGRADE
     # Virtualization
     scripts/config -e KVM_SMM
     # General architecture-dependent options
@@ -201,34 +213,34 @@ prepare() {
     scripts/config -e NETFILTER_INGRESS
     # Device Drivers
     scripts/config -e FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER \
-                   -e DELL_SMBIOS_SMM \
-                   -m PATA_JMICRON \
-                   -E SOUND SOUND_OSS_CORE \
-                   -e SND_OSSEMUL \
-                   -M SND_OSSEMUL SND_MIXER_OSS \
-                   -M SND_MIXER_OSS SND_PCM_OSS \
-                   -E SND_PCM_OSS SND_PCM_OSS_PLUGINS \
-                   -m AGP -M AGP AGP_INTEL -M AGP_INTEL AGP_VIA
+                -e DELL_SMBIOS_SMM \
+                -m PATA_JMICRON \
+                -E SOUND SOUND_OSS_CORE \
+                -e SND_OSSEMUL \
+                -M SND_OSSEMUL SND_MIXER_OSS \
+                -M SND_MIXER_OSS SND_PCM_OSS \
+                -E SND_PCM_OSS SND_PCM_OSS_PLUGINS \
+                -m AGP -M AGP AGP_INTEL -M AGP_INTEL AGP_VIA
     # Kernel hacking -> Compile-time checks and compiler options -> Make section mismatch errors non-fatal
     scripts/config -e SECTION_MISMATCH_WARN_ONLY
     # File systems
     scripts/config -m NTFS3_FS \
-                   -e NTFS3_LZX_XPRESS \
-                   -e NTFS3_FS_POSIX_ACL
+                -e NTFS3_LZX_XPRESS \
+                -e NTFS3_FS_POSIX_ACL
     scripts/config -m SMB_SERVER \
-                   -e SMB_SERVER_SMBDIRECT \
-                   -e SMB_SERVER_CHECK_CAP_NET_ADMIN \
-                   -e SMB_SERVER_KERBEROS5
+                -e SMB_SERVER_SMBDIRECT \
+                -e SMB_SERVER_CHECK_CAP_NET_ADMIN \
+                -e SMB_SERVER_KERBEROS5
     # Security options
     scripts/config -e SECURITY_SELINUX \
-                   -e SECURITY_SELINUX_BOOTPARAM \
-                   -e SECURITY_SMACK \
-                   -e SECURITY_SMACK_BRINGUP \
-                   -e SECURITY_SMACK_NETFILTER \
-                   -e SECURITY_SMACK_APPEND_SIGNALS \
-                   -e SECURITY_TOMOYO \
-                   -e SECURITY_APPARMOR \
-                   -e SECURITY_YAMA
+                -e SECURITY_SELINUX_BOOTPARAM \
+                -e SECURITY_SMACK \
+                -e SECURITY_SMACK_BRINGUP \
+                -e SECURITY_SMACK_NETFILTER \
+                -e SECURITY_SMACK_APPEND_SIGNALS \
+                -e SECURITY_TOMOYO \
+                -e SECURITY_APPARMOR \
+                -e SECURITY_YAMA
     # Security options -> Landlock options
     scripts/config -e SECURITY_LANDLOCK
     # Library routines
@@ -236,30 +248,30 @@ prepare() {
     
     # Enable LLVM compilation
     [[ -n "${_use_llvm_lto}" ]] && scripts/config -d LTO_NONE \
-                                                  -e LTO \
-                                                  -e LTO_CLANG \
-                                                  -e ARCH_SUPPORTS_LTO_CLANG \
-                                                  -e ARCH_SUPPORTS_LTO_CLANG_THIN \
-                                                  -e HAS_LTO_CLANG \
-                                                  -e LTO_CLANG_THIN \
-                                                  -e HAVE_GCC_PLUGINS
+                                                -e LTO \
+                                                -e LTO_CLANG \
+                                                -e ARCH_SUPPORTS_LTO_CLANG \
+                                                -e ARCH_SUPPORTS_LTO_CLANG_THIN \
+                                                -e HAS_LTO_CLANG \
+                                                -e LTO_CLANG_THIN \
+                                                -e HAVE_GCC_PLUGINS
     
     # Enable or disable debug settings
     [[ "${_debug}" == "y" ]] && scripts/config -e DEBUG_INFO \
-                                               -e DEBUG_INFO_BTF \
-                                               -e DEBUG_INFO_DWARF4 \
-                                               -e PAHOLE_HAS_SPLIT_BTF \
-                                               -e DEBUG_INFO_BTF_MODULES
+                                            -e DEBUG_INFO_BTF \
+                                            -e DEBUG_INFO_DWARF4 \
+                                            -e PAHOLE_HAS_SPLIT_BTF \
+                                            -e DEBUG_INFO_BTF_MODULES
     [[ "${_debug}" == "n" ]] && scripts/config -d DEBUG_INFO \
-                                               -d DEBUG_INFO_BTF \
-                                               -d DEBUG_INFO_DWARF4 \
-                                               -d PAHOLE_HAS_SPLIT_BTF \
-                                               -d DEBUG_INFO_BTF_MODULES
+                                            -d DEBUG_INFO_BTF \
+                                            -d DEBUG_INFO_DWARF4 \
+                                            -d PAHOLE_HAS_SPLIT_BTF \
+                                            -d DEBUG_INFO_BTF_MODULES
     
     # Run olddefconfig
     make ${BUILD_FLAGS[*]} olddefconfig
     diff -u $srcdir/cl-linux/config .config || :
-    
+
     # Patch with kernel_compiler_patch patches
     # This must be executed after olddefconfig
     # to allow for the next section to run.
@@ -269,19 +281,22 @@ prepare() {
     [[ -n "${_subarch}" ]] && yes "${_subarch}" | make ${BUILD_FLAGS[*]} oldconfig
     # Ask for subarch
     [[ -z "${_subarch}" ]] && make ${BUILD_FLAGS[*]} oldconfig
+
+    # Open configuration editors
+    [[ -n "$_makemenuconfig" ]] && make ${BUILD_FLAGS[*]} menuconfig
+    [[ -n "$_makexconfig" ]] && make ${BUILD_FLAGS[*]} xconfig
+    [[ -n "$_makenconfig" ]] && make ${BUILD_FLAGS[*]} nconfig
+
+    # Save configuration
+    [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
+}
+
+prepare() {
+    cd "${_src_linux}" || exit 1
+    apply_patches
     
-    # Optionally use the configuration of the running kernel
-    # Written originally by nous, see
-    # https://web.archive.org/web/20110711231356/https://aur.archlinux.org/packages.php?ID=40191 (package doesn't exist anymore)
-    [[ -n "${_use_current}" ]] &&
-        if [[ -s /proc/config.gz ]]; then
-            # modprobe configs
-            zcat /proc/config.gz > ./.config
-        else
-            warning "Your kernel was not compiled with IKCONFIG_PROC."
-            warning "Unable to read kernel configuration, aborting."
-            exit
-        fi
+    [[ -n "${_use_current}" ]] && copy_defconfig
+    [[ -z "${_use_current}" ]] && create_defconfig
     
     # Read and apply modprobed database
     # See https://aur.archlinux.org/packages/modprobed-db
@@ -294,14 +309,6 @@ prepare() {
     
     # Write kernel version
     make -s kernelrelease > version
-    
-    # Open configuration editors
-    [[ -n "$_makemenuconfig" ]] && make ${BUILD_FLAGS[*]} menuconfig
-    [[ -n "$_makexconfig" ]] && make ${BUILD_FLAGS[*]} xconfig
-    [[ -n "$_makenconfig" ]] && make ${BUILD_FLAGS[*]} nconfig
-
-    # Save configuration
-    [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
 }
 
 build() {
