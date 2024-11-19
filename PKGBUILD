@@ -173,6 +173,10 @@ apply_patches() {
 }
 
 copy_defconfig() {
+    local _cur_major_ver="$(zcat /proc/config.gz | grep Linux | grep -o '[0-9]*[0-9]\.[0-9]*[0-9]')"
+    [[ ${_cur_major_ver} != ${_kernel_major} ]] &&
+        warning "Major version was updated, you should regen the defconfig"
+
     if [[ -s /proc/config.gz ]]; then
         # modprobe configs
         zcat /proc/config.gz > ./.config
@@ -293,6 +297,7 @@ create_defconfig() {
 
 prepare() {
     cd "${_src_linux}" || exit 1
+
     apply_patches
     
     [[ -n "${_use_current}" ]] && copy_defconfig
