@@ -1,11 +1,14 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2034 disable=SC2048 disable=SC2086 disable=SC2154
 # Maintainer: JeremyStarTM <jeremystartm@staropensource.de>
 # Maintainer: Josip Ponjavic <josipponjavic at gmail dot com>
 # Maintainer: JScript Lab <vqueiroz@jscriptlab.com>
+# Contributor: yarost12 <yaro330@gmail.com>
 
 ### BUILD OPTIONS
 # You can modify these settings by executing "env _<setting>=<value> makepkg"
 # instead of modifying the PKGBUILD file. Here's an example:
-# env _makemenuconfig=y _copyfinalconfig=y _subarch=42 makepkg
+# env _makemenuconfig=y _copyfinalconfig=y _subarch=30 makepkg
 
 # Tweak kernel options prior to a build via menuconfig.
 # 
@@ -51,7 +54,7 @@
 
 # Optionally select a sub architecture by number or
 # leave blank, which will require user interaction during the build.
-# Note that the default option is 40.
+# Note that the default option is 41.
 #
 #  1. AMD Opteron/Athlon64/Hammer/K8 (MK8)
 #  2. AMD Opteron/Athlon64/Hammer/K8 with SSE3 (MK8SSE3)
@@ -67,37 +70,35 @@
 #  12. AMD Zen 2 (MZEN2)
 #  13. AMD Zen 3 (MZEN3)
 #  14. AMD Zen 4 (MZEN4)
-#  15. Intel P4 / older Netburst based Xeon (MPSC)
-#  16. Intel Core 2 (MCORE2)
+#  15. AMD Zen 5 (MZEN5)
+#  16. Intel P4 / older Netburst based Xeon (MPSC)
 #  17. Intel Atom (MATOM)
-#  18. Intel Nehalem (MNEHALEM)
-#  19. Intel Westmere (MWESTMERE)
-#  20. Intel Silvermont (MSILVERMONT)
-#  21. Intel Goldmont (MGOLDMONT)
-#  22. Intel Goldmont Plus (MGOLDMONTPLUS)
-#  23. Intel Sandy Bridge (MSANDYBRIDGE)
-#  24. Intel Ivy Bridge (MIVYBRIDGE)
-#  25. Intel Haswell (MHASWELL)
-#  26. Intel Broadwell (MBROADWELL)
-#  27. Intel Skylake (MSKYLAKE)
-#  28. Intel Skylake X (MSKYLAKEX)
-#  29. Intel Cannon Lake (MCANNONLAKE)
-#  30. Intel Ice Lake (MICELAKE)
-#  31. Intel Cascade Lake (MCASCADELAKE)
-#  32. Intel Cooper Lake (MCOOPERLAKE)
-#  33. Intel Tiger Lake (MTIGERLAKE)
-#  34. Intel Sapphire Rapids (MSAPPHIRERAPIDS)
-#  35. Intel Rocket Lake (MROCKETLAKE)
-#  36. Intel Alder Lake (MALDERLAKE)
-#  37. Intel Raptor Lake (MRAPTORLAKE)
-#  38. Intel Meteor Lake (MMETEORLAKE)
-#  39. Intel Emerald Rapids (MEMERALDRAPIDS)
-#  40. Generic-x86-64 (GENERIC_CPU)
-#  41. Generic-x86-64-v2 (GENERIC_CPU2)
-#  42. Generic-x86-64-v3 (GENERIC_CPU3)
-#  43. Generic-x86-64-v4 (GENERIC_CPU4)
-#  44. Intel-Native optimizations autodetected by the compiler (MNATIVE_INTEL)
-#  45. AMD-Native optimizations autodetected by the compiler (MNATIVE_AMD)
+#  18. Intel Core 2 (MCORE2)
+#  19. Intel Nehalem (MNEHALEM)
+#  20. Intel Westmere (MWESTMERE)
+#  21. Intel Silvermont (MSILVERMONT)
+#  22. Intel Goldmont (MGOLDMONT)
+#  23. Intel Goldmont Plus (MGOLDMONTPLUS)
+#  24. Intel Sandy Bridge (MSANDYBRIDGE)
+#  25. Intel Ivy Bridge (MIVYBRIDGE)
+#  26. Intel Haswell (MHASWELL)
+#  27. Intel Broadwell (MBROADWELL)
+#  28. Intel Skylake (MSKYLAKE)
+#  29. Intel Skylake X (MSKYLAKEX)
+#  30. Intel Cannon Lake (MCANNONLAKE)
+#  31. Intel Ice Lake (MICELAKE)
+#  32. Intel Cascade Lake (MCASCADELAKE)
+#  33. Intel Cooper Lake (MCOOPERLAKE)
+#  34. Intel Tiger Lake (MTIGERLAKE)
+#  35. Intel Sapphire Rapids (MSAPPHIRERAPIDS)
+#  36. Intel Rocket Lake (MROCKETLAKE)
+#  37. Intel Alder Lake (MALDERLAKE)
+#  38. Intel Raptor Lake (MRAPTORLAKE)
+#  39. Intel Meteor Lake (MMETEORLAKE)
+#  40. Intel Emerald Rapids (MEMERALDRAPIDS)
+#  41. Generic-x86-64 (GENERIC_CPU)
+#  42. Intel-Native optimizations autodetected by the compiler (MNATIVE_INTEL)
+#  43. AMD-Native optimizations autodetected by the compiler (MNATIVE_AMD)
 : "${_subarch:=""}"
 
 # Enable compilation with LLVM
@@ -130,12 +131,12 @@
 ### BUILD OPTIONS END
 
 # Kernel version
-_kernel_major=6.10
-_kernel_minor=7
+_kernel_major=6.12
+_kernel_minor=1
 # Clear Linux patches version
-_clr=7-1460
+_clr=1-1493
 # kernel_compiler_patch version
-_kernelcompilerpatch="20240221.2"
+_kernelcompilerpatch="20241018"
 # Source directory names
 _src_linux=linux-${_kernel_major}
 _src_clr=${_kernel_major}.${_clr}
@@ -146,7 +147,7 @@ pkgver=${_kernel_major}.${_kernel_minor}
 pkgrel=1
 pkgdesc="Linux kernel with patches from Clear Linux which allow for higher performance."
 arch=("x86_64")
-url="https://github.com/clearlinux-pkgs/linux"
+url="https://git.staropensource.de/JeremyStarTM/aur-linux-clear"
 license=(GPL-2.0-only)
 makedepends=("bc" "cpio" "gettext" "git" "libelf" "pahole" "perl" "python" "tar" "xz" "zstd")
 [[ -n "${_use_llvm_to}" ]] && makedepends+=("clang" "llvm" "lld")
@@ -162,13 +163,12 @@ source=(
 
 [[ -n "${_use_llvm_lto}" ]] && BUILD_FLAGS=("LLVM=1" "LLVM_IAS=1")
 
-export KBUILD_BUILD_HOST=archlinux
-export KBUILD_BUILD_USER=${pkgbase}
-export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
+export "KBUILD_BUILD_HOST=archlinux"
+export "KBUILD_BUILD_USER=${pkgbase}"
+export "KBUILD_BUILD_TIMESTAMP=$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-prepare() {
-    cd "${_src_linux}" || exit 1
-    
+# Applies all patches
+apply_patches() {
     # Patch with kernel version patches
     patch -Np1 -i ../patch-${_kernel_major}.${_kernel_minor} || true
     
@@ -186,7 +186,27 @@ prepare() {
         
         patch -Np1 -i "${srcdir}/cl-linux/${i}" || true
     done
-    
+}
+
+# Copies the kernel config
+copy_defconfig() {
+    local "_cur_major_ver=$(zcat /proc/config.gz | grep Linux | grep -o '[0-9]*[0-9]\.[0-9]*[0-9]')"
+    [[ "${_cur_major_ver}" != "${_kernel_major}" ]] &&
+        warning "Major version was updated, you should regen the defconfig"
+
+    if [[ -s /proc/config.gz ]]; then
+        # modprobe configs
+        zcat /proc/config.gz > ./.config
+        make ${BUILD_FLAGS[*]} olddefconfig
+    else
+        warning "Your kernel was not compiled with IKCONFIG_PROC."
+        warning "Unable to read kernel configuration, aborting."
+        exit
+    fi
+}
+
+# Updates the kernel config
+update_defconfig() {
     # Copy configuration file (if found)
     if [ -f "${startdir}/kconfig" ]; then
         echo ":: Using configuration file \"${startdir}/kconfig\""
@@ -199,12 +219,12 @@ prepare() {
     # Extra configuration
     # General setup
     scripts/config --set-str DEFAULT_HOSTNAME archlinux \
-                   -e IKCONFIG \
-                   -e IKCONFIG_PROC \
-                   -u RT_GROUP_SCHED
+                -e IKCONFIG \
+                -e IKCONFIG_PROC \
+                -u RT_GROUP_SCHED
     # Power management and ACPI options
     scripts/config -e ACPI_REV_OVERRIDE_POSSIBLE \
-                   -e ACPI_TABLE_UPGRADE
+                -e ACPI_TABLE_UPGRADE
     # Virtualization
     scripts/config -e KVM_SMM
     # General architecture-dependent options
@@ -215,85 +235,93 @@ prepare() {
     scripts/config -e NETFILTER_INGRESS
     # Device Drivers
     scripts/config -e FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER \
-                   -e DELL_SMBIOS_SMM \
-                   -m PATA_JMICRON \
-                   -E SOUND SOUND_OSS_CORE \
-                   -e SND_OSSEMUL \
-                   -M SND_OSSEMUL SND_MIXER_OSS \
-                   -M SND_MIXER_OSS SND_PCM_OSS \
-                   -E SND_PCM_OSS SND_PCM_OSS_PLUGINS \
-                   -m AGP -M AGP AGP_INTEL -M AGP_INTEL AGP_VIA
+                -e DELL_SMBIOS_SMM \
+                -m PATA_JMICRON \
+                -E SOUND SOUND_OSS_CORE \
+                -e SND_OSSEMUL \
+                -M SND_OSSEMUL SND_MIXER_OSS \
+                -M SND_MIXER_OSS SND_PCM_OSS \
+                -E SND_PCM_OSS SND_PCM_OSS_PLUGINS \
+                -m AGP -M AGP AGP_INTEL -M AGP_INTEL AGP_VIA
     # Kernel hacking -> Compile-time checks and compiler options -> Make section mismatch errors non-fatal
     scripts/config -e SECTION_MISMATCH_WARN_ONLY
     # File systems
     scripts/config -m NTFS3_FS \
-                   -e NTFS3_LZX_XPRESS \
-                   -e NTFS3_FS_POSIX_ACL
+                -e NTFS3_LZX_XPRESS \
+                -e NTFS3_FS_POSIX_ACL
     scripts/config -m SMB_SERVER \
-                   -e SMB_SERVER_SMBDIRECT \
-                   -e SMB_SERVER_CHECK_CAP_NET_ADMIN \
-                   -e SMB_SERVER_KERBEROS5
+                -e SMB_SERVER_SMBDIRECT \
+                -e SMB_SERVER_CHECK_CAP_NET_ADMIN \
+                -e SMB_SERVER_KERBEROS5
     # Security options
     scripts/config -e SECURITY_SELINUX \
-                   -e SECURITY_SELINUX_BOOTPARAM \
-                   -e SECURITY_SMACK \
-                   -e SECURITY_SMACK_BRINGUP \
-                   -e SECURITY_SMACK_NETFILTER \
-                   -e SECURITY_SMACK_APPEND_SIGNALS \
-                   -e SECURITY_TOMOYO \
-                   -e SECURITY_APPARMOR \
-                   -e SECURITY_YAMA
+                -e SECURITY_SELINUX_BOOTPARAM \
+                -e SECURITY_SMACK \
+                -e SECURITY_SMACK_BRINGUP \
+                -e SECURITY_SMACK_NETFILTER \
+                -e SECURITY_SMACK_APPEND_SIGNALS \
+                -e SECURITY_TOMOYO \
+                -e SECURITY_APPARMOR \
+                -e SECURITY_YAMA
+    # Security options -> Landlock options
+    scripts/config -e SECURITY_LANDLOCK
     # Library routines
     scripts/config -k -e FONT_TER16x32
     
     # Enable LLVM compilation
     [[ -n "${_use_llvm_lto}" ]] && scripts/config -d LTO_NONE \
-                                                  -e LTO \
-                                                  -e LTO_CLANG \
-                                                  -e ARCH_SUPPORTS_LTO_CLANG \
-                                                  -e ARCH_SUPPORTS_LTO_CLANG_THIN \
-                                                  -e HAS_LTO_CLANG \
-                                                  -e LTO_CLANG_THIN \
-                                                  -e HAVE_GCC_PLUGINS
+                                                -e LTO \
+                                                -e LTO_CLANG \
+                                                -e ARCH_SUPPORTS_LTO_CLANG \
+                                                -e ARCH_SUPPORTS_LTO_CLANG_THIN \
+                                                -e HAS_LTO_CLANG \
+                                                -e LTO_CLANG_THIN \
+                                                -e HAVE_GCC_PLUGINS
     
     # Enable or disable debug settings
     [[ "${_debug}" == "y" ]] && scripts/config -e DEBUG_INFO \
-                                               -e DEBUG_INFO_BTF \
-                                               -e DEBUG_INFO_DWARF4 \
-                                               -e PAHOLE_HAS_SPLIT_BTF \
-                                               -e DEBUG_INFO_BTF_MODULES
+                                            -e DEBUG_INFO_BTF \
+                                            -e DEBUG_INFO_DWARF4 \
+                                            -e PAHOLE_HAS_SPLIT_BTF \
+                                            -e DEBUG_INFO_BTF_MODULES
     [[ "${_debug}" == "n" ]] && scripts/config -d DEBUG_INFO \
-                                               -d DEBUG_INFO_BTF \
-                                               -d DEBUG_INFO_DWARF4 \
-                                               -d PAHOLE_HAS_SPLIT_BTF \
-                                               -d DEBUG_INFO_BTF_MODULES
+                                            -d DEBUG_INFO_BTF \
+                                            -d DEBUG_INFO_DWARF4 \
+                                            -d PAHOLE_HAS_SPLIT_BTF \
+                                            -d DEBUG_INFO_BTF_MODULES
     
     # Run olddefconfig
     make ${BUILD_FLAGS[*]} olddefconfig
     diff -u $srcdir/cl-linux/config .config || :
-    
+
     # Patch with kernel_compiler_patch patches
     # This must be executed after olddefconfig
     # to allow for the next section to run.
-    patch -Np1 -i "$srcdir/kernel_compiler_patch-$_kernelcompilerpatch/more-uarches-for-kernel-6.8-rc4+.patch"
+    patch -Np1 -i "$srcdir/kernel_compiler_patch-$_kernelcompilerpatch/more-ISA-levels-and-uarches-for-kernel-6.1.79+.patch"
     
     # Set subarch automatically
     [[ -n "${_subarch}" ]] && yes "${_subarch}" | make ${BUILD_FLAGS[*]} oldconfig
     # Ask for subarch
     [[ -z "${_subarch}" ]] && make ${BUILD_FLAGS[*]} oldconfig
+
+    # Open configuration editors
+    [[ -n "$_makemenuconfig" ]] && make ${BUILD_FLAGS[*]} menuconfig
+    [[ -n "$_makexconfig" ]] && make ${BUILD_FLAGS[*]} xconfig
+    [[ -n "$_makenconfig" ]] && make ${BUILD_FLAGS[*]} nconfig
+
+    # Save configuration
+    # shellcheck disable=SC2015
+    [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
+}
+
+# Prepares the installation
+prepare() {
+    cd "${_src_linux}" || exit 1
+
+    apply_patches
     
-    # Optionally use the configuration of the running kernel
-    # Written originally by nous, see
-    # https://web.archive.org/web/20110711231356/https://aur.archlinux.org/packages.php?ID=40191 (package doesn't exist anymore)
-    [[ -n "${_use_current}" ]] &&
-        if [[ -s /proc/config.gz ]]; then
-            # modprobe configs
-            zcat /proc/config.gz > ./.config
-        else
-            warning "Your kernel was not compiled with IKCONFIG_PROC."
-            warning "Unable to read kernel configuration, aborting."
-            exit
-        fi
+    [[ -n "${_use_current}" ]] && copy_defconfig
+    [[ -z "${_use_current}" ]] && update_defconfig
     
     # Read and apply modprobed database
     # See https://aur.archlinux.org/packages/modprobed-db
@@ -306,16 +334,9 @@ prepare() {
     
     # Write kernel version
     make -s kernelrelease > version
-    
-    # Open configuration editors
-    [[ -n "$_makemenuconfig" ]] && make ${BUILD_FLAGS[*]} menuconfig
-    [[ -n "$_makexconfig" ]] && make ${BUILD_FLAGS[*]} xconfig
-    [[ -n "$_makenconfig" ]] && make ${BUILD_FLAGS[*]} nconfig
-
-    # Save configuration
-    [[ -n "${_copyfinalconfig}" ]] && cp -Tf ./.config "${startdir}/kconfig-new" || true
 }
 
+# Build kernel
 build() {
     cd "${_src_linux}" || exit 1
     MAKE_ARGUMENTS=${BUILD_FLAGS[*]}
@@ -326,7 +347,7 @@ build() {
     make ${MAKE_ARGUMENTS}
 }
 
-
+# Packages the kernel package
 _package() {
     pkgdesc="${pkgdesc} This package includes the kernel and compiled modules."
     depends=("coreutils" "kmod" "initramfs")
@@ -336,7 +357,7 @@ _package() {
     install=linux.install
     
     cd "${_src_linux}" || exit 1
-    local modulesdir="${pkgdir}/usr/lib/modules/$(<version)"
+    local "modulesdir=${pkgdir}/usr/lib/modules/$(<version)"
     
     # Create boot image
     # systemd expects to find the kernel there to allow hibernation
@@ -356,12 +377,13 @@ _package() {
     rm "${modulesdir}"/build
 }
 
+# Packages the headers package
 _package-headers() {
     pkgdesc="${pkgdesc} This package includes header files and scripts for building kernel modules."
     depends=("pahole")
     
     cd "${_src_linux}" || exit 1
-    local builddir="${pkgdir}/usr/lib/modules/$(<version)/build"
+    local "builddir=${pkgdir}/usr/lib/modules/$(<version)/build"
     
     install -Dt "${builddir}" -m644 .config Makefile Module.symvers System.map \
         localversion.* version vmlinux
@@ -438,17 +460,21 @@ _package-headers() {
 pkgname=("$pkgbase" "$pkgbase-headers")
 for _p in "${pkgname[@]}"; do
   eval "package_$_p() {
-    $(declare -f "_package${_p#$pkgbase}")
-    _package${_p#$pkgbase}
+    $(declare -f "_package${_p#"$pkgbase"}")
+    _package${_p#"$pkgbase"}
   }"
 done
+
+# Taken from https://www.kernel.org/signature.html
 validpgpkeys=(
   "ABAF11C65A2970B130ABE3C479BE3E4300411886"  # Linus Torvalds
   "647F28654894E3BD457199BE38DBBDC86092693E"  # Greg Kroah-Hartman
   "9B55E409B90ACFA478D1048B11F72643EBF1E972"  # JScript Lab
+  "E27E5D8A3403A2EF66873BBCDEA66FF797772CDC"  # Sasha Levin
+  "AC2B29BD34A6AFDDB3F68F35E7BFC8EC95861109"  # Ben Hutchings
 )
-sha256sums=("774698422ee54c5f1e704456f37c65c06b51b4e9a8b0866f34580d86fef8e226"
+sha256sums=("b1a2562be56e42afb3f8489d4c2a7ac472ac23098f1ef1c1e40da601f54625eb"
             "SKIP"
-            "221b40140dabf32b1dcecee374d1733e4566e52da5313909d70808aa8e8ad9c0"
+            "7013d2a29f02ca7508c7d6264afafdc0c0ee38cf5eef350e7b7f34f1393f2518"
             "SKIP"
-            "1d3ac3e581cbc5108f882fcdc75d74f7f069654c71bad65febe5ba15a7a3a14f")
+            "b3fd8b1c5bbd39a577afcccf6f1119fdf83f6d72119f4c0811801bdd51d1bc61")
