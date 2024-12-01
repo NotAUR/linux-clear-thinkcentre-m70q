@@ -1,5 +1,6 @@
 # Maintainer: JeremyStarTM <jeremystartm@staropensource.de>
 # Maintainer: Josip Ponjavic <josipponjavic at gmail dot com>
+# Maintainer: JScript Lab <vqueiroz@jscriptlab.com>
 
 ### BUILD OPTIONS
 # You can modify these settings by executing "env _<setting>=<value> makepkg"
